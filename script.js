@@ -265,14 +265,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Displayed list cleared.');
     }
 
-    // --- Scanning Logic ---
+        // --- Scanning Logic ---
     async function startScan() {
         if (isScanning) return;
-         if (Object.keys(productData).length === 0) {
+        if (Object.keys(productData).length === 0) {
             alert("No product data loaded. Please upload a CSV file first.");
             return;
         }
 
+        // Instantiate the code reader immediately
         codeReader = new ZXing.BrowserMultiFormatReader();
         isScanning = true;
         scanButton.disabled = true; // Keep scan button disabled while actively scanning
@@ -282,69 +283,63 @@ document.addEventListener('DOMContentLoaded', () => {
         scanStatus.textContent = 'Requesting camera access...';
 
         try {
-            const videoInputDevices = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
-            if (videoInputDevices.length < 1) {
-                throw new Error("No video input devices found.");
-            }
+            console.log('Attempting to decode from video device...');
+            scanStatus.textContent = 'Starting scanner... Point camera at barcode.';
 
-            const rearCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('environment'));
-            const selectedDeviceId = rearCamera ? rearCamera.deviceId : videoInputDevices[0].deviceId;
-
-            console.log(`Started decode from video device ${selectedDeviceId}`);
-            scanStatus.textContent = 'Point camera at barcode...';
-
-            codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+            // Directly ask to decode from *any* video device.
+            // Passing 'undefined' lets the library/browser try to choose.
+            // This bypasses the problematic static listVideoInputDevices call.
+            codeReader.decodeFromVideoDevice(undefined, 'video', (result, err) => {
                 if (result) {
+                    // Successfully decoded a barcode
                     const barcode = result.text;
+                    console.log('Scan successful:', barcode); // Log raw result
                     const product = lookupBarcode(barcode);
                     if (product) {
                         displayItem(barcode, product);
-                         navigator.vibrate?.(100);
+                        navigator.vibrate?.(100); // Vibrate briefly if supported
                     } else {
                         console.log(`Barcode ${barcode} not found in data.`);
                         scanStatus.textContent = `Barcode ${barcode} not found.`;
-                         setTimeout(() => { if(isScanning) scanStatus.textContent = 'Point camera at barcode...'; }, 2000);
+                        setTimeout(() => { if (isScanning) scanStatus.textContent = 'Point camera at barcode...'; }, 2000);
                     }
                 }
+                // Check for errors, but ignore NotFoundException (normal when no barcode is in view)
                 if (err && !(err instanceof ZXing.NotFoundException)) {
                     console.error('Scan error:', err);
-                    scanStatus.textContent = 'Scanning error. Try again.';
-                    setTimeout(() => { if(isScanning) scanStatus.textContent = 'Point camera at barcode...'; }, 2000);
+                     // Display a more user-friendly error for common camera issues
+                     if (err.name === 'NotAllowedError') {
+                        scanStatus.textContent = 'Camera permission denied.';
+                        alert('Camera permission was denied. Please allow camera access in your browser settings.');
+                        stopScan(); // Stop if permission denied
+                     } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                         scanStatus.textContent = 'No suitable camera found.';
+                         alert('Could not find a suitable camera on this device.');
+                         stopScan();
+                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                          scanStatus.textContent = 'Camera is already in use or cannot be read.';
+                          alert('Could not start the camera. It might be used by another application or browser tab.');
+                          stopScan();
+                     }
+                     else {
+                         scanStatus.textContent = 'Scanning error. Try again.';
+                         alert(`An unexpected scanning error occurred: ${err.name}`);
+                         stopScan(); // Stop on other critical errors
+                     }
+                    setTimeout(() => { if (isScanning) scanStatus.textContent = 'Point camera at barcode...'; }, 3000); // Reset prompt after error display
                 }
+                // Otherwise (err is NotFoundException), just continue scanning silently.
             });
 
+            console.log(`Decode operation started successfully.`);
+
         } catch (error) {
-            console.error('Error starting scanner:', error);
+            // This catch block handles errors during the *initialization* phase
+            console.error('Error setting up scanner:', error);
             alert(`Error accessing camera or starting scan: ${error.message}`);
-            scanStatus.textContent = 'Camera access failed or scan error.';
-            stopScan(); // Clean up on error
+            scanStatus.textContent = 'Camera setup failed.';
+            stopScan(); // Clean up on setup error
         }
-    }
-
-     function stopScan() {
-        if (codeReader) {
-            codeReader.reset();
-            console.log('ZXing code reader reset.');
-        }
-        if (videoElement.srcObject) {
-             videoElement.srcObject.getTracks().forEach(track => track.stop());
-             videoElement.srcObject = null;
-             console.log('Video tracks stopped.');
-        }
-
-
-        isScanning = false;
-         // Re-enable buttons ONLY if data is loaded
-        const dataLoaded = Object.keys(productData).length > 0;
-        scanButton.disabled = !dataLoaded;
-        manualAddButton.disabled = !dataLoaded;
-
-        stopScanButton.style.display = 'none';
-        scannerContainer.style.display = 'none';
-        if (!scanStatus.textContent.includes('failed')) {
-            scanStatus.textContent = 'Scanner stopped.';
-        }
-        console.log('Scanning stopped.');
     }
 
     // --- Manual Add Logic ---
