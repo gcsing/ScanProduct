@@ -1,0 +1,161 @@
+body {
+    font-family: sans-serif;
+    padding: 15px;
+    background-color: #f4f4f4;
+}
+
+h1, h2 {
+    color: #333;
+    text-align: center;
+}
+
+.controls {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #eee;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.file-upload-area {
+    margin-bottom: 15px;
+}
+
+.file-upload-label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+#data-status {
+    font-style: italic;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.manual-entry-area {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: flex; /* Align items nicely */
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.manual-label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+#manualBarcode {
+    padding: 8px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 180px; /* Give it some width */
+}
+
+#manualAddButton {
+    padding: 8px 15px; /* Slightly smaller than scan button */
+    font-size: 14px;
+    background-color: #28a745; /* Green color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#manualAddButton:disabled {
+     background-color: #cccccc;
+     cursor: not-allowed;
+}
+
+.status-message { /* Style for #manual-status */
+    margin-left: 10px;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+.scan-clear-area {
+    margin-top: 10px;
+}
+
+
+#scanButton, #clearButton, #stopScanButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+#scanButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#clearButton {
+     background-color: #dc3545;
+}
+#stopScanButton {
+    background-color: #ffc107;
+    color: black;
+    display: none; /* Hide initially */
+}
+
+
+#scannedItemsList {
+    list-style: none;
+    padding: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 600px; /* Adjust as needed */
+    margin: 20px auto;
+}
+
+#scannedItemsList li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#scannedItemsList li:last-child {
+    border-bottom: none;
+}
+
+#scannedItemsList li span {
+    margin: 2px 5px;
+}
+
+.product-name {
+    flex-grow: 1;
+    font-weight: bold;
+    min-width: 150px; /* Ensure name doesn't get too squished */
+}
+
+.product-price {
+    font-weight: bold;
+    color: green;
+    min-width: 60px; /* Ensure price aligns better */
+    text-align: right;
+}
+
+#scanner-container {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    background-color: #fff;
+    border-radius: 5px;
+    display: none; /* Hidden initially */
+}
+
+#scan-status {
+    margin-top: 10px;
+    font-style: italic;
+    color: #555;
+}
